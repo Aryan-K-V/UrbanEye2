@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Issue API Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .nav-bar a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .nav-bar a:hover {
+            background-color: #e9ecef;
+        }
+        .nav-bar a.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .analytics-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+        }
+        .analytics-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .analytics-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        .analytics-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .analytics-card .subtitle {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .upload-section {
+            margin: 20px 0;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .live-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        .live-status.online {
+            background-color: #28a745;
+        }
+        .live-status.offline {
+            background-color: #dc3545;
+        }
+        .live-status.checking {
+            background-color: #ffc107;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .quick-actions button {
+            font-size: 0.9em;
+            padding: 8px 16px;
+        }
+        .refresh-btn {
+            background-color: #17a2b8;
+        }
+        .refresh-btn:hover {
+            background-color: #138496;
+        }
+        .header-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .api-status {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+        }
+        .last-updated {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏙️ Civic Issue API Tester</h1>
+        
+        <div class="nav-bar">
+            <a href="index.html" class="active">🏠 API Tester</a>
+            <a href="monitoring.html">📊 Monitoring</a>
+        </div>
+
+        <div class="header-status">
+            <div class="api-status">
+                <span class="live-status checking" id="liveStatus"></span>
+                <span id="apiStatusText">Checking API Status...</span>
+            </div>
+            <div class="last-updated" id="lastUpdated">Never updated</div>
+        </div>
+
+        <div class="analytics-section">
+            <div class="analytics-title">📊 API Analytics Overview</div>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3>🔄 Total Requests</h3>
+                    <div class="value" id="totalRequests">0</div>
+                    <div class="subtitle">This month</div>
+                </div>
+                <div class="analytics-card">
+                    <h3>✅ Success Rate</h3>
+                    <div class="value" id="successRate">0%</div>
+                    <div class="subtitle">All time</div>
+                </div>
+                <div class="analytics-card">
+                    <h3>⚡ Avg Response</h3>
+                    <div class="value" id="avgResponse">0ms</div>
+                    <div class="subtitle">Last 24 hours</div>
+                </div>
+                <div class="analytics-card">
+                    <h3>🕒 Uptime</h3>
+                    <div class="value" id="uptime">0%</div>
+                    <div class="subtitle">Last 30 days</div>
+                </div>
+                <div class="analytics-card">
+                    <h3>📈 Health Checks</h3>
+                    <div class="value" id="healthChecks">0</div>
+                    <div class="subtitle">Automated</div>
+                </div>
+                <div class="analytics-card">
+                    <h3>🤖 AI Analyses</h3>
+                    <div class="value" id="aiAnalyses">0</div>
+                    <div class="subtitle">Images processed</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button onclick="refreshAnalytics()" class="refresh-btn">🔄 Refresh Analytics</button>
+            <button onclick="testAllEndpoints()">🚀 Test All Endpoints</button>
+            <button onclick="clearAnalytics()" style="background-color: #dc3545;">🗑️ Clear Analytics</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>1. Health Check</h3>
+            <p>Test if the API is running</p>
+            <button onclick="testHealth()">Test Health</button>
+            <div id="healthResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Gemini Connection</h3>
+            <p>Test if Gemini AI is working</p>
+            <button onclick="testGemini()">Test Gemini</button>
+            <div id="geminiResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Image Analysis</h3>
+            <p>Upload an image to test civic issue detection</p>
+            <div class="upload-section">
+                <input type="file" id="imageInput" accept="image/*">
+                <br>
+                <button onclick="testImageUpload()">Analyze Image</button>
+            </div>
+            <div id="imageResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Get Categories</h3>
+            <p>Retrieve available issue categories</p>
+            <button onclick="testCategories()">Get Categories</button>
+            <div id="categoriesResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://ue-backend.onrender.com';
+        let analytics = {
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            responseTimes: [],
+            healthChecks: 0,
+            aiAnalyses: 0,
+            lastUpdated: null
+        };
+
+        // Load analytics on page load
+        window.onload = function() {
+            loadAnalytics();
+            updateAnalyticsDisplay();
+            checkApiStatus();
+        };
+
+        function loadAnalytics() {
+            const savedAnalytics = localStorage.getItem('apiAnalytics');
+            if (savedAnalytics) {
+                analytics = { ...analytics, ...JSON.parse(savedAnalytics) };
+            }
+        }
+
+        function saveAnalytics() {
+            analytics.lastUpdated = new Date().toISOString();
+            localStorage.setItem('apiAnalytics', JSON.stringify(analytics));
+        }
+
+        function updateAnalyticsDisplay() {
+            document.getElementById('totalRequests').textContent = analytics.totalRequests;
+            
+            const successRate = analytics.totalRequests > 0 ? 
+                Math.round((analytics.successfulRequests / analytics.totalRequests) * 100) : 0;
+            document.getElementById('successRate').textContent = `${successRate}%`;
+            
+            const avgResponse = analytics.responseTimes.length > 0 ? 
+                Math.round(analytics.responseTimes.reduce((a, b) => a + b, 0) / analytics.responseTimes.length) : 0;
+            document.getElementById('avgResponse').textContent = `${avgResponse}ms`;
+            
+            document.getElementById('uptime').textContent = `${successRate}%`;
+            document.getElementById('healthChecks').textContent = analytics.healthChecks;
+            document.getElementById('aiAnalyses').textContent = analytics.aiAnalyses;
+            
+            if (analytics.lastUpdated) {
+                document.getElementById('lastUpdated').textContent = 
+                    `Last updated: ${new Date(analytics.lastUpdated).toLocaleString()}`;
+            }
+        }
+
+        function recordRequest(success, responseTime, type = 'general') {
+            analytics.totalRequests++;
+            
+            if (success) {
+                analytics.successfulRequests++;
+            } else {
+                analytics.failedRequests++;
+            }
+            
+            if (responseTime) {
+                analytics.responseTimes.push(responseTime);
+                // Keep only last 100 response times
+                if (analytics.responseTimes.length > 100) {
+                    analytics.responseTimes = analytics.responseTimes.slice(-100);
+                }
+            }
+            
+            if (type === 'health') {
+                analytics.healthChecks++;
+            } else if (type === 'ai') {
+                analytics.aiAnalyses++;
+            }
+            
+            saveAnalytics();
+            updateAnalyticsDisplay();
+        }
+
+        async function checkApiStatus() {
+            const statusIndicator = document.getElementById('liveStatus');
+            const statusText = document.getElementById('apiStatusText');
+            
+            statusIndicator.className = 'live-status checking';
+            statusText.textContent = 'Checking API Status...';
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/health`);
+                const responseTime = Date.now() - startTime;
+                
+                if (response.ok) {
+                    statusIndicator.className = 'live-status online';
+                    statusText.textContent = 'API Online';
+                    recordRequest(true, responseTime, 'health');
+                } else {
+                    statusIndicator.className = 'live-status offline';
+                    statusText.textContent = 'API Error';
+                    recordRequest(false, responseTime, 'health');
+                }
+            } catch (error) {
+                statusIndicator.className = 'live-status offline';
+                statusText.textContent = 'API Offline';
+                recordRequest(false, null, 'health');
+            }
+        }
+
+        function refreshAnalytics() {
+            checkApiStatus();
+            updateAnalyticsDisplay();
+            showNotification('Analytics refreshed!', 'success');
+        }
+
+        function clearAnalytics() {
+            if (confirm('Are you sure you want to clear all analytics data?')) {
+                analytics = {
+                    totalRequests: 0,
+                    successfulRequests: 0,
+                    failedRequests: 0,
+                    responseTimes: [],
+                    healthChecks: 0,
+                    aiAnalyses: 0,
+                    lastUpdated: null
+                };
+                saveAnalytics();
+                updateAnalyticsDisplay();
+                showNotification('Analytics cleared!', 'info');
+            }
+        }
+
+        async function testAllEndpoints() {
+            showNotification('Testing all endpoints...', 'info');
+            
+            await testHealth();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testGemini();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testCategories();
+            
+            showNotification('All endpoints tested!', 'success');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `result ${type}`;
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '1000';
+            notification.style.minWidth = '250px';
+            notification.style.padding = '15px';
+            notification.style.borderRadius = '5px';
+            notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+
+        function showResult(elementId, content, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = content;
+            element.style.display = 'block';
+        }
+
+        function showLoading(elementId) {
+            showResult(elementId, 'Loading...', 'loading');
+        }
+
+        async function testHealth() {
+            showLoading('healthResult');
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/health`);
+                const responseTime = Date.now() - startTime;
+                const data = await response.json();
+                
+                showResult('healthResult', JSON.stringify(data, null, 2), 'success');
+                recordRequest(true, responseTime, 'health');
+            } catch (error) {
+                showResult('healthResult', `Error: ${error.message}`, 'error');
+                recordRequest(false, null, 'health');
+            }
+        }
+
+        async function testGemini() {
+            showLoading('geminiResult');
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/test_gemini`);
+                const responseTime = Date.now() - startTime;
+                const data = await response.json();
+                
+                showResult('geminiResult', JSON.stringify(data, null, 2), 
+                    data.status === 'success' ? 'success' : 'error');
+                recordRequest(data.status === 'success', responseTime);
+            } catch (error) {
+                showResult('geminiResult', `Error: ${error.message}`, 'error');
+                recordRequest(false, null);
+            }
+        }
+
+        async function testCategories() {
+            showLoading('categoriesResult');
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/categories`);
+                const responseTime = Date.now() - startTime;
+                const data = await response.json();
+                
+                showResult('categoriesResult', JSON.stringify(data, null, 2), 'success');
+                recordRequest(true, responseTime);
+            } catch (error) {
+                showResult('categoriesResult', `Error: ${error.message}`, 'error');
+                recordRequest(false, null);
+            }
+        }
+
+        async function testImageUpload() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showResult('imageResult', 'Please select an image file first!', 'error');
+                return;
+            }
+
+            showLoading('imageResult');
+            
+            try {
+                const startTime = Date.now();
+                const formData = new FormData();
+                formData.append('image', file);
+
+                const response = await fetch(`${API_BASE}/report_civic_issue`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const responseTime = Date.now() - startTime;
+                const data = await response.json();
+                
+                showResult('imageResult', JSON.stringify(data, null, 2), 
+                    data.success ? 'success' : 'error');
+                recordRequest(data.success, responseTime, 'ai');
+            } catch (error) {
+                showResult('imageResult', `Error: ${error.message}`, 'error');
+                recordRequest(false, null, 'ai');
+            }
+        }
+
+        // Auto-refresh API status every 30 seconds
+        setInterval(checkApiStatus, 30000);
+    </script>
+</body>
+</html>

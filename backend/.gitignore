@@ -1,0 +1,16 @@
+# Environment variables (never commit your real GEMINI_API_KEY)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Uploads / temp
+uploads/
+*.log
